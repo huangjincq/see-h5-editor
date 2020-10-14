@@ -19,7 +19,6 @@
 </template>
 
 <script>
-import groupBy from "lodash/groupBy";
 import { copyText } from "@/utils/index";
 
 export default {

@@ -44,8 +44,6 @@ function ergodic (arr) {
       type: NODE_TYPE.ELEMENT // 节点类型-元素
     }
   })
-    // TODO 不应该在这里排序，应该对原始数据排序
-    .sort((a, b) => b.commonStyle.zIndex - a.commonStyle.zIndex)
 }
 
 export default {
@@ -68,7 +66,6 @@ export default {
       activePageUUID: (state) => state.editor.activePageUUID,
       activeElementUUID: (state) => state.editor.activeElementUUID
     }),
-
     ...mapGetters([
       'currentPageIndex',
       'activeElement',

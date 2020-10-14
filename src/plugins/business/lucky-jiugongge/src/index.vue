@@ -205,8 +205,8 @@ export default {
             // 获取兑奖礼品列表
             API.GET_PRIZE_LIST(this.globalVariable).then(res => {
                 let list = []
-                if (res.data && res.data.lists && res.data.lists.length > 0) {
-                    list = res.data.lists
+                if (res.data && res.data.length > 0) {
+                    list = res.data
                 } else if (this.isPreview) {
                     list = demoList
                 }

@@ -8,7 +8,7 @@ class Apis {
     GET_PRIZE_LIST (params) {
         return request({
             method: 'get',
-            url: '/activity/activity/prize-list',
+            url: '/activity/prize-list',
             params
         })
     }
@@ -17,7 +17,7 @@ class Apis {
     POST_DRAW_PRIZE ( data) {
         return request({
             method: 'post',
-            url: '/activity/prize/draw-prize',
+            url: '/activity/draw-prize',
             data
         })
     }

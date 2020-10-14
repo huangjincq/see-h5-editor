@@ -1,6 +1,7 @@
 import { cloneDeep, merge, get } from 'lodash'
 import editorProjectConfig from '@editor/pages/editor/DataModel'
 import { createUUID, getActiveElement, getElementPath } from '@/utils'
+import { zIndexUp, zIndexDown, zIndexTop, zIndexBottom } from '@/utils/swapArray'
 import Vue from 'vue'
 
 /**
@@ -155,9 +156,7 @@ const actions = {
    */
   addElement ({ commit }, { elData, targetUUID }) {
     targetUUID = targetUUID || state.activeElementUUID || state.activePageUUID
-    let activePage = getters.activePage(state)
-    let maxZIndex = activePage.elements.reduce((prev, cur) => cur.commonStyle.zIndex > prev ? cur.commonStyle.zIndex : prev, 1)
-    let data = editorProjectConfig.getElementConfig(elData, { zIndex: maxZIndex + 1 })
+    let data = editorProjectConfig.getElementConfig(elData)
     const target = getActiveElement(getters.activePage(state), targetUUID)
     // 如果目标节点 有slot 就插入里面  没有则放在根下
     if (target.hasSlot) {
@@ -214,23 +213,17 @@ const actions = {
   },
   copyElement ({ state, commit }, elData) {
     let copyOrignData = elData ? elData : getters.activeElement(state)
-    const activePage = getters.activePage(state)
-    const maxZIndex = activePage.elements.reduce((prev, cur) => cur.commonStyle.zIndex > prev ? cur.commonStyle.zIndex : prev, 1)
-    let data = editorProjectConfig.copyElement(copyOrignData, { zIndex: maxZIndex + 1 })
+    let data = editorProjectConfig.copyElement(copyOrignData)
     commit('addElement', data)
     commit('setActiveElementUUID', data.uuid)
     commit('addHistoryCache')
     return data
   },
   deleteElement ({ state, commit }, uuid) {
-    console.log('delete')
     // 如果删除选中元素则取消元素选中
     if (uuid === state.activeElementUUID) {
       commit('setActiveElementUUID', '')
     }
-    // 先将页面元素zIndex 重置下再删除元素
-    // commit('resetElementZIndex', {uuid: uuid, type: 'set0'})
-
     commit('deleteElement', uuid)
     commit('addHistoryCache')
   },
@@ -369,7 +362,7 @@ const mutations = {
     const pageIndex = state.projectData.pages.findIndex(v => {return v.uuid === state.activePageUUID})
     let target = getActiveElement(state.projectData.pages[pageIndex], targetUUID)
     // state.projectData.pages[pageIndex].elements.push(elData);
-    Vue.set(target, 'elements', target.elements ? [...target.elements, elData] : [elData])
+    Vue.set(target, 'elements', target.elements ? [elData, ...target.elements] : [elData])
     // target = { ...target, elements: target.elements ? [...target.elements, elData] : [elData] }
     // target.elements ? target.elements.push(elData) : target.elements = [elData]
   },
@@ -386,7 +379,7 @@ const mutations = {
    */
   addElement (state, elData) {
     let index = state.projectData.pages.findIndex(v => {return v.uuid === state.activePageUUID})
-    state.projectData.pages[index].elements.push(elData)
+    state.projectData.pages[index].elements.unshift(elData)
   },
   /**
    * 往画板添加元素
@@ -462,41 +455,28 @@ const mutations = {
    * @param type layerUp上一层，layerDown下一层，layerTop置顶， layerBottom置底
    */
   resetElementZIndex (state, { uuid, type }) {
-    uuid = uuid || state.activeElementUUID
     let activePage = getters.activePage(state)
-    let currentElement = getActiveElement(activePage, state.activeElementUUID)
-    let itemZIndex = currentElement.commonStyle.zIndex
-    let maxZIndex = activePage.elements.reduce((prev, cur) => cur.commonStyle.zIndex > prev ? cur.commonStyle.zIndex : prev, 1)
-    let mminIndex = 1
-    let zIndexDirc = {
-      layerUp: Math.min(itemZIndex + 1, maxZIndex),
-      layerDown: Math.max(itemZIndex - 1, mminIndex),
-      layerTop: maxZIndex,
-      layerBottom: mminIndex,
-      set0: 0
+    const elementPath = getElementPath(activePage, uuid)
+
+    const parentElementPath = elementPath.slice(0, -2)
+    const parentElement = get(activePage, parentElementPath)
+    console.log(parentElement)
+    let elementIndex = parentElement.findIndex(v => v.uuid === uuid)
+    console.log(elementIndex)
+    switch (type) {
+      case 'layerUp':
+        zIndexUp(parentElement, elementIndex, parentElement.length)
+        break
+      case 'layerDown':
+        zIndexDown(parentElement, elementIndex, parentElement.length)
+        break
+      case 'layerTop':
+        zIndexTop(parentElement, elementIndex, parentElement.length)
+        break
+      case 'layerBottom':
+        zIndexBottom(parentElement, elementIndex, parentElement.length)
+        break
     }
-    if (zIndexDirc[type] === undefined) return
-    let currentZIndex = zIndexDirc[type]
-    currentElement.commonStyle.zIndex = currentZIndex
-    activePage.elements.forEach(item => {
-      if (uuid === item.uuid) return
-      // 上面一位zIndex减一
-      if (type === 'layerUp' && item.commonStyle.zIndex === currentZIndex) {
-        item.commonStyle.zIndex--
-      }
-      // 下面元素zIdex加一
-      if (type === 'layerDown' && item.commonStyle.zIndex === currentZIndex) {
-        item.commonStyle.zIndex++
-      }
-      // 目标元素zIndex 以上的都减一
-      if (type === 'layerTop' && item.commonStyle.zIndex > itemZIndex) {
-        item.commonStyle.zIndex--
-      }
-      // 目标元素zIndex以下的都加一
-      if ((type === 'layerBottom' || type === 'set0') && item.commonStyle.zIndex < itemZIndex) {
-        item.commonStyle.zIndex++
-      }
-    })
   },
 
   // ================================历史纪录========================================

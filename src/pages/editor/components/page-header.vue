@@ -34,7 +34,6 @@ export default {
       this.$router.push({ name: 'Login' })
     },
     goLogin () {
-      this.$mUtils.Cookie.set('beforeLoginUrl', encodeURIComponent(this.$route.fullPath), 1 / 24 / 60, window.location.host, window.location.pathname.substring(0, window.location.pathname.length - 1)) // 保存用户进入的url
       this.$router.push({ name: 'Login' })
     }
   }

@@ -5,7 +5,7 @@
     v-show="visible"
     :class="{ active: nodeInfo.uuid === activeElementUUID ,'drop-inner':dropInner}"
     :style="{
-            ...getCommonStyle(nodeInfo.commonStyle),
+            ...getCommonStyle(nodeInfo.commonStyle,elementsLength - nodeIndex),
             transition: 'unset'
         }"
     @dragover="handleDragOver"
@@ -28,8 +28,10 @@
         v-slot="{ item }"
       >
         <node
-          v-for="element in nodeInfo.elements"
+          v-for="(element,index) in nodeInfo.elements"
           :key="element.uuid"
+          :node-index="index"
+          :elements-length="nodeInfo.elements.length"
           :scope="item"
           :nodeInfo.sync="element"
           :verticalGuidelines="verticalGuidelines"
@@ -65,6 +67,14 @@ export default {
     }
   },
   props: {
+    nodeIndex: {
+      type: Number,
+      default:  0
+    },
+    elementsLength: {
+      type: Number,
+      default: 0
+    },
     nodeInfo: {},
     verticalGuidelines: {
       type: Array,
