@@ -4,60 +4,61 @@ const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
 // const CompressionWebpackPlugin = require('compression-webpack-plugin')
 // const productionGzipExtensions = ['js', 'css']
 const BUILD_PAGE = process.env.BUILD_PAGE
-const IS_BUILD_GH_PAGES = BUILD_PAGE === 'GH_PAGES' // 是否为github pages 构建
 let devServer = {
   port: 9001,
-  proxy: { // 代理
-    '/page/*': { // 代理页面接口
-      target: 'https://www.fastmock.site/mock/3b9a90fe1d7a5e99d613b18a7f9f9af8/see-h5',//设置你调用的接口域名和端口号 别忘了加http
+  proxy: {
+    // 代理
+    '/page/*': {
+      // 代理页面接口
+      target: 'https://www.fastmock.site/mock/3b9a90fe1d7a5e99d613b18a7f9f9af8/see-h5', //设置你调用的接口域名和端口号 别忘了加http
       ws: false,
       changeOrigin: true,
-      pathRewrite: {}
+      pathRewrite: {},
     },
-    '/mock/*': { // 代理模拟数据接口
-      target: 'https://www.fastmock.site/mock/3b9a90fe1d7a5e99d613b18a7f9f9af8/see-h5',//设置你调用的接口域名和端口号 别忘了加http
+    '/mock/*': {
+      // 代理模拟数据接口
+      target: 'https://www.fastmock.site/mock/3b9a90fe1d7a5e99d613b18a7f9f9af8/see-h5', //设置你调用的接口域名和端口号 别忘了加http
       ws: false,
       changeOrigin: true,
-      pathRewrite: {}
+      pathRewrite: {},
     },
-    '/activity/*': { // 代理模拟数据接口
-      target: 'https://www.fastmock.site/mock/3b9a90fe1d7a5e99d613b18a7f9f9af8/see-h5',//设置你调用的接口域名和端口号 别忘了加http
+    '/activity/*': {
+      // 代理模拟数据接口
+      target: 'https://www.fastmock.site/mock/3b9a90fe1d7a5e99d613b18a7f9f9af8/see-h5', //设置你调用的接口域名和端口号 别忘了加http
       ws: false,
       changeOrigin: true,
-      pathRewrite: {}
-    }
-  }
+      pathRewrite: {},
+    },
+  },
 }
 
 let pages = {
   EDITOR: {
     entry: 'src/pages/editor/main.js', // 入口
     template: 'public/editor.html', // 模板
-    filename: 'index.html' // 输出文件
+    filename: 'index.html', // 输出文件
   },
   H5: {
     entry: 'src/pages/h5/main.js', // 入口
     template: 'public/h5.html', // 模板
-    filename: 'h5.html' // 输出文件
-  }
+    filename: 'h5.html', // 输出文件
+  },
 }
 
 module.exports = {
   devServer: devServer,
-  publicPath: IS_BUILD_GH_PAGES ? '/see-h5-editor' : '/', // 这里是 github.io pages 的部署路径
+  publicPath: '', // 这里是 github.io pages 的部署路径
   // 输出文件目录
-  assetsDir: 'static',
+  // assetsDir: 'static',
   // 修改 pages 入口
   pages,
   productionSourceMap: process.env.NODE_ENV !== 'production',
-  configureWebpack: config => {
+  configureWebpack: (config) => {
     // monaco-editor 代码编辑器需要
-    config.plugins.push(
-      new MonacoWebpackPlugin({ languages: ['javascript'] })
-    )
+    config.plugins.push(new MonacoWebpackPlugin({ languages: ['javascript'] }))
   },
   // 扩展 webpack 配置
-  chainWebpack: config => {
+  chainWebpack: (config) => {
     // @ 默认指向 src 目录，这里要改成 examples
     // 另外也可以新增一个 ~ 指向 packages
     config.resolve.alias
@@ -68,7 +69,7 @@ module.exports = {
       .rule('js')
       .use('babel')
       .loader('babel-loader')
-      .tap(options => {
+      .tap((options) => {
         // 修改它的选项...
         return options
       })
@@ -78,9 +79,9 @@ module.exports = {
       preProcessor: 'scss',
       patterns: [
         path.resolve(__dirname, './src/pages/editor/common/styles/variables.scss'),
-        path.resolve(__dirname, './src/constant/constant.scss')
-      ]
-    }
+        path.resolve(__dirname, './src/constant/constant.scss'),
+      ],
+    },
   },
   css: {
     loaderOptions: {
@@ -96,10 +97,10 @@ module.exports = {
             // ignoreIdentifier: false,  //（boolean/string）忽略单个属性的方法，启用ignoreidentifier后，replace将自动设置为true。
             // replace: true, // （布尔值）替换包含REM的规则，而不是添加回退。
             mediaQuery: false, //（布尔值）允许在媒体查询中转换px。
-            minPixelValue: 3 //设置要替换的最小像素值(3px会被转rem)。 默认 0
-          })
-        ]
-      }
-    }
-  }
+            minPixelValue: 3, //设置要替换的最小像素值(3px会被转rem)。 默认 0
+          }),
+        ],
+      },
+    },
+  },
 }
